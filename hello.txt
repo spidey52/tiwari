@@ -1,0 +1,6 @@
+1. mount the drives.
+2. copy the files.
+3. unmount the drive.
+
+
+copy the file with 

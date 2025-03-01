@@ -1,0 +1,10 @@
+{
+	"vera_crypt_path": "sdfs",
+	"volumes": [
+		{
+			"volume_name": "Volume 1",
+			"volume_path": "/mnt/veracrypt1",
+			"drive_letter": "V"
+		}
+	]
+}
