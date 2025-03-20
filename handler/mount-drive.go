@@ -31,7 +31,6 @@ func mountDrive(driveLetter, password string) error {
 	for _, volume := range veraDetails.Volumes {
 		if volume.DriveLetter == driveLetter {
 
-
 			// fmt.Println(volume.VolumeName)
 			// fmt.Println(volume.VolumePath)
 			// fmt.Println(volume.DriveLetter)
@@ -52,8 +51,6 @@ func mountDrive(driveLetter, password string) error {
 			if runtime.GOOS == "windows" {
 				commands = append([]string{"cmd", "/C"}, commands...)
 			}
-
-			fmt.Println("mounting drive", commands, runtime.GOOS, volume.VolumePath, volume.DriveLetter)
 
 			cmd := exec.Command(commands[0], commands[1:]...)
 

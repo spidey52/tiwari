@@ -1,10 +1,18 @@
 {
-	"vera_crypt_path": "sdfs",
+	"vera_crypt_path": "/Applications/VeraCrypt.app/Contents/MacOS/VeraCrypt",
 	"volumes": [
 		{
 			"volume_name": "Volume 1",
-			"volume_path": "/mnt/veracrypt1",
-			"drive_letter": "V"
+			"volume_path": "/Volumes/VERA 1",
+			"drive_letter": "7"
+		}
+	],
+	"backup_volume": [
+		{
+			"volume_name": "Volume 1",
+			"volume_path": "/Volumes/VERA 1",
+			"drive_letter": "7",
+			"backup_folder": "/Users/satyam/Documents/etc"
 		}
 	]
 }

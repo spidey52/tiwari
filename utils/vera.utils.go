@@ -36,7 +36,16 @@ func encryptAES(plainText string, key []byte) (string, string, error) {
 	cipherText := aesGCM.Seal(nil, nonce, []byte(plainText), nil)
 	return hex.EncodeToString(cipherText), hex.EncodeToString(nonce), nil
 }
+func generateKey() ([]byte, error) {
+	seed_key := time.Now().UTC().Format("2006-01-02-mgdh")
+	hash := sha256.Sum256([]byte(seed_key))
 
+	substr := hash[:16]
+	fmt.Println("seed key", seed_key)
+
+	return substr, nil
+
+}
 // Decrypt text using AES-GCM
 func decryptAES(cipherTextHex string, nonceHex string, key []byte) (string, error) {
 	block, err := aes.NewCipher(key)
@@ -60,17 +69,7 @@ func decryptAES(cipherTextHex string, nonceHex string, key []byte) (string, erro
 	return string(plainText), nil
 }
 
-func generateKey() ([]byte, error) {
-	seed_key := time.Now().UTC().Format("2006-01-02-mgdh")
-	hash := sha256.Sum256([]byte(seed_key))
 
-	substr := hash[:16]
-	fmt.Println("seed key", seed_key)
-
-	return substr, nil
-
-	// return hash[:16], nil
-}
 
 func EncryptPassword(password string) (string, error) {
 

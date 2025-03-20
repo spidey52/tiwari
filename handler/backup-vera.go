@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 	"rmt/utils"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -38,6 +40,15 @@ func copyFile(src, dst string) error {
 		return err
 	}
 	return os.Chmod(dst, srcInfo.Mode())
+}
+
+func GetBasePath(filepath string) string {
+	if strings.Contains(filepath, "\\") {
+		filepath = strings.ReplaceAll(filepath, "\\", "/")
+	}
+
+	basePath := path.Base(filepath)
+	return basePath
 }
 
 // copyDirectory recursively copies a source directory to a destination
@@ -88,6 +99,7 @@ func BackupVeraHandler(c *gin.Context) {
 	idx := -1
 
 	for i, volume := range veraDetails.BackupVolume {
+		fmt.Println("Volume", volume.DriveLetter, "Backup Drive", backupDriveDto.DriveLetter)
 		if volume.DriveLetter == backupDriveDto.DriveLetter {
 			idx = i
 			break
@@ -101,36 +113,38 @@ func BackupVeraHandler(c *gin.Context) {
 
 	details := veraDetails.BackupVolume[idx]
 
-	fileName := path.Base(details.VolumePath)
+	// mount
+	err = mountDrive(backupDriveDto.DriveLetter, backupDriveDto.Password)
 
-	if fileName == "." || fileName == "/" {
-		c.JSON(400, gin.H{"error": "invalid file name"})
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error":   err.Error(),
+			"message": "failed to mount drive",
+		})
 		return
 	}
-
-	// mount
-	mountDrive(backupDriveDto.DriveLetter, backupDriveDto.Password)
 
 	//  vera drive path
 	veraDrivePath := details.DriveLetter + ":\\" + "backup"
 
 	// remove existing backup
 	os.RemoveAll(veraDrivePath)
+	fmt.Println("removing existing backup")
 
 	// create backup folder
 	os.MkdirAll(veraDrivePath, os.ModePerm)
+	fmt.Println("creating backup folder")
 
 	// copy files
 
+	fmt.Println("Backup folder", details.BackupFolder, "Vera Drive Path", veraDrivePath)
 	copyDirectory(details.BackupFolder, veraDrivePath)
+	fmt.Println("copying files")
 
-	// unmounting drive
 	unMountDrive(backupDriveDto.DriveLetter)
 
-	// rename file with timestamp for backing up, this filename will be on the cloud
-	fileName = time.Now().Format(time.DateTime) + "-" + fileName
-
-	backup_path := path.Join("mega:/vera-backup", fileName)
+	drive_filename := time.Now().Format(time.DateTime) + "-" + strings.ToLower(details.VolumeName)
+	backup_path := path.Join("mega:/vera-backup", drive_filename)
 
 	commands := []string{
 		"rclone",
@@ -143,14 +157,19 @@ func BackupVeraHandler(c *gin.Context) {
 		commands = append([]string{"cmd", "/C"}, commands...)
 	}
 
+	fmt.Println("backup command", commands)
 	cmd := exec.Command(commands[0], commands[1:]...)
 
+	fmt.Println("backup started")
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error(), "output": string(output)})
 		return
 	}
+
+	fmt.Println("backup completed")
+	fmt.Println(string(output))
 
 	c.JSON(200, gin.H{
 		"message": "backup completed",

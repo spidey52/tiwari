@@ -35,7 +35,7 @@ const GeneratePassword = () => {
    <p>Generate Password</p>
 
    <div className='input-group mb-3'>
-    <input type='text' className='form-control' placeholder='password' value={password} onChange={(e) => setPassword(e.target.value)} />
+    <input type='password' className='form-control' placeholder='password' value={password} onChange={(e) => setPassword(e.target.value)} />
    </div>
 
    <p>
